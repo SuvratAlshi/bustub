@@ -19,7 +19,10 @@ ClockReplacer::ClockReplacer(size_t num_pages) {
     candidate_attendance = new vector<int>(num_pages, 0);
 }
 
-ClockReplacer::~ClockReplacer() = default;
+ClockReplacer::~ClockReplacer() {
+    delete candidates;
+    delete candidate_attendance;
+}
 
 bool ClockReplacer::Victim(frame_id_t *frame_id) { 
     if (candidates->size() == 0) {
