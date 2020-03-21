@@ -49,8 +49,8 @@ class ClockReplacer : public Replacer {
   // TODO(student): implement me!
   int size = 0;
   int index = 0;
-  list<int> *candidates;
-  vector<int> *candidate_attendance;
+  std::list<int> *candidates;
+  std::vector<int> *candidate_attendance;
 };
 
 }  // namespace bustub

@@ -12,6 +12,8 @@
 
 #include "buffer/clock_replacer.h"
 
+using namespace std;
+
 namespace bustub {
 
 ClockReplacer::ClockReplacer(size_t num_pages) {
