@@ -14,16 +14,42 @@
 
 namespace bustub {
 
-ClockReplacer::ClockReplacer(size_t num_pages) {}
+ClockReplacer::ClockReplacer(size_t num_pages) {
+    candidates = new list<int>;
+    candidate_attendance = new vector<int>(num_pages, 0);
+}
 
 ClockReplacer::~ClockReplacer() = default;
 
-bool ClockReplacer::Victim(frame_id_t *frame_id) { return false; }
+bool ClockReplacer::Victim(frame_id_t *frame_id) { 
+    if (candidates->size() == 0) {
+        return false;
+    }
 
-void ClockReplacer::Pin(frame_id_t frame_id) {}
+    int victim_id = candidates->front();
+    candidates->pop_front();
+    *frame_id = victim_id;
+    return true;
+}
 
-void ClockReplacer::Unpin(frame_id_t frame_id) {}
+void ClockReplacer::Pin(frame_id_t frame_id) {
+    if (candidate_attendance->at(frame_id) == 1) {
+            candidates->remove(frame_id);
+            candidate_attendance->at(frame_id) = 0;
+    }
+}
 
-size_t ClockReplacer::Size() { return 0; }
+void ClockReplacer::Unpin(frame_id_t frame_id) {
+    // add to the clock replacer vec
+    if (candidate_attendance->at(frame_id)) {
+        return;
+    }
+    candidates->push_back(frame_id);
+    candidate_attendance->at(frame_id) = 1;
+}
+
+size_t ClockReplacer::Size() {
+    return candidates->size();
+ }
 
 }  // namespace bustub

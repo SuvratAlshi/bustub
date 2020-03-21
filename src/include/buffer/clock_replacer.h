@@ -47,6 +47,10 @@ class ClockReplacer : public Replacer {
 
  private:
   // TODO(student): implement me!
+  int size = 0;
+  int index = 0;
+  list<int> *candidates;
+  vector<int> *candidate_attendance;
 };
 
 }  // namespace bustub
