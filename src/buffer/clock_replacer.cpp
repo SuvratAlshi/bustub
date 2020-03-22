@@ -34,6 +34,7 @@ bool ClockReplacer::Victim(frame_id_t *frame_id) {
     int victim_id = candidates->front();
     candidates->pop_front();
     *frame_id = victim_id;
+    candidate_attendance->at(victim_id) = 0;
     return true;
 }
 
