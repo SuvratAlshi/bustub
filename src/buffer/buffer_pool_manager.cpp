@@ -45,26 +45,29 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // 3.     Delete R from the page table and insert P.
   // 4.     Update P's metadata, read in the page content from disk, and then return a pointer to P.
 
-  std::unordered_map<page_id_t, frame_id_t>::iterator it = page_table_.find(page_id);
   frame_id_t frame_id;
 
+  std::unordered_map<page_id_t, frame_id_t>::iterator it = page_table_.find(page_id);
   // if page alread in buffer manager
   if (it != page_table_.end()) {
+    cout << "FetchPage: found page in page_table" << endl;
     frame_id = page_table_[it->second];
     return &pages_[frame_id];
   }
 
   // check free list
   if (free_list_.size() > 0) {
+    cout << "FetchPage: found a empty frame" << endl;
     frame_id = free_list_.front();
     free_list_.pop_front();
   } else {
-     bool victim_present = replacer_->Victim(&frame_id);
-     // nothing in the free list and replacer
-     // this also means that all pages are pinned
-     if (!victim_present) {
-       return nullptr;
-     }
+    bool victim_present = replacer_->Victim(&frame_id);
+    // nothing in the free list and replacer
+    // this also means that all pages are pinned
+    if (!victim_present) {
+      return nullptr;
+    }
+    cout << "FetchPage: found page in the replacer and frame id is " << frame_id << "." << endl;
   }  
 
   // flush victim page if dirty
