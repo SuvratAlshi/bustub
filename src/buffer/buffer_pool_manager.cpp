@@ -44,7 +44,48 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // 2.     If R is dirty, write it back to the disk.
   // 3.     Delete R from the page table and insert P.
   // 4.     Update P's metadata, read in the page content from disk, and then return a pointer to P.
-  return nullptr;
+
+  std::unordered_map<page_id_t, frame_id_t>::iterator it = page_table_.find(page_id);
+  frame_id_t frame_id;
+
+  // if page alread in buffer manager
+  if (it != page_table_.end()) {
+    frame_id = page_table_[it->second];
+    return &pages_[frame_id];
+  }
+
+  // check free list
+  if (free_list_.size() > 0) {
+    frame_id = free_list_.front();
+    free_list_.pop_front();
+  } else {
+     bool victim_present = replacer_->Victim(&frame_id);
+     // nothing in the free list and replacer
+     // this also means that all pages are pinned
+     if (!victim_present) {
+       return nullptr;
+     }
+  }  
+
+  // flush victim page if dirty
+  if (pages_[frame_id].is_dirty_) {
+    FlushPageImpl(pages_[frame_id].page_id_);
+  }
+
+  // erase victim page_id
+  page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
+
+  // insert p into page_table
+  page_table_[page_id] = frame_id;
+
+  // clean the frame and reset meta data to new page
+  pages_[frame_id].ResetMemory();
+  pages_[frame_id].page_id_ = page_id;
+  pages_[frame_id].pin_count_ = 0;
+  pages_[frame_id].is_dirty_ = false;
+  
+  disk_manager_->ReadPage(page_id, &pages_[frame_id].data_);
+  return &pages_[frame_id];
 }
 
 bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { 
@@ -125,6 +166,14 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
 
 void BufferPoolManager::FlushAllPagesImpl() {
   // You can do it!
+  frame_id_t frame_id;
+  page_id_t page_id;
+  std::unordered_map<page_id_t, frame_id_t>::iterator it = page_table_.begin();
+  while (it != page_table_.end()) {
+    page_id = it->first;
+    frame_id = it->second;
+    disk_manager_->WritePage(page_id, pages_[frame_id].data_);
+  }
 }
 
 
