@@ -29,6 +29,8 @@ BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager
   }
 }
 
+
+
 BufferPoolManager::~BufferPoolManager() {
   delete[] pages_;
   delete replacer_;
@@ -58,7 +60,39 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   // 2.   Pick a victim page P from either the free list or the replacer. Always pick from the free list first.
   // 3.   Update P's metadata, zero out memory and add P to the page table.
   // 4.   Set the page ID output parameter. Return a pointer to P.
-  return nullptr;
+
+  frame_id_t frame_id;
+  page_id_t  new_page_id;
+
+  // check free list
+  if (free_list_.size() > 0) {
+    frame_id = free_list_.front();
+    free_list_.pop_front();
+  } else {
+     bool victim_present = replacer_->Victim(&frame_id);
+     // nothing in the free list and replacer
+     // this also means that all pages are pinned
+     if (!victim_present) {
+       return nullptr;
+     }
+  }
+
+  new_page_id = disk_manager_->AllocatePage();
+  
+  // zero out memory
+  pages_[frame_id].page_id_ = new_page_id;
+  pages_[frame_id].pin_count_ = 0;
+  pages_[frame_id].is_dirty_ = false;
+  memset(&pages_[frame_id].data_, 0, PAGE_SIZE);
+
+  // add to the page table
+  page_table_[new_page_id] = frame_id;
+
+  // set page_id
+  *page_id = new_page_id;
+
+  // return page pointer
+  return &pages_[frame_id].data_;
 }
 
 bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
@@ -73,5 +107,7 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
 void BufferPoolManager::FlushAllPagesImpl() {
   // You can do it!
 }
+
+
 
 }  // namespace bustub
