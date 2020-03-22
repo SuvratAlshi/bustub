@@ -143,6 +143,9 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
      if (!victim_present) {
        return nullptr;
      }
+    
+    // erase victim page_id
+    page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
   }
 
   new_page_id = disk_manager_->AllocatePage();
