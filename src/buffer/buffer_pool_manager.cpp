@@ -69,7 +69,8 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
 
   // flush victim page if dirty
   if (pages_[frame_id].is_dirty_) {
-    FlushPageImpl(pages_[frame_id].page_id_);
+    bool flushResult = FlushPageImpl(pages_[frame_id].page_id_);
+    assert(flushResult == true);
   }
 
   // erase victim page_id
@@ -94,7 +95,8 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
   }
 
   if (is_dirty) {
-    FlushPageImpl(page_id);
+    bool flushResult = FlushPageImpl(page_id);
+    assert(flushResult == true);
   }
 
   frame_id_t frame_id = page_table_[page_id];
