@@ -84,7 +84,7 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   pages_[frame_id].pin_count_ = 0;
   pages_[frame_id].is_dirty_ = false;
   
-  disk_manager_->ReadPage(page_id, &pages_[frame_id].data_);
+  disk_manager_->ReadPage(page_id, pages_[frame_id].data_);
   return &pages_[frame_id];
 }
 
