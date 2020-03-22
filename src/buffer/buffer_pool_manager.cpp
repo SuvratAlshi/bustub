@@ -142,6 +142,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
        return nullptr;
      }
     
+    cout << "NewPage: victim frame id is " << frame_id << " and page id is " << pages_[frame_id].page_id_ << "." << endl;
     // erase victim page_id
     page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
   }
