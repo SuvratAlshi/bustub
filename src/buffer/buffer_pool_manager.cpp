@@ -94,7 +94,7 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
 }
 
 bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { 
-  cout << "UnpinPage 0" << endl;
+  cout << "UnpinPage 0, page id is " << page_id << "." << endl;
   if (page_table_.find(page_id) == page_table_.end()) {
     cout << "UnpinPage 1" << endl;
     return false;
@@ -135,6 +135,8 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   frame_id_t frame_id;
   page_id_t  new_page_id;
 
+  cout << "NewPage entry" << endl;
+
   // check free list
   if (free_list_.size() > 0) {
     frame_id = free_list_.front();
@@ -144,6 +146,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
      // nothing in the free list and replacer
      // this also means that all pages are pinned
      if (!victim_present) {
+       cout << "NewPage: returning nullptr" << endl;
        return nullptr;
      }
     
