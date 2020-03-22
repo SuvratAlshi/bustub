@@ -47,7 +47,6 @@ TEST(BufferPoolManagerTest, SampleTest) {
     EXPECT_EQ(nullptr, bpm->NewPage(&page_id_temp));
   }
 
-  /*
   // Scenario: After unpinning pages {0, 1, 2, 3, 4} and pinning another 4 new pages,
   // there would still be one buffer page left for reading page 0.
   for (int i = 0; i < 5; ++i) {
@@ -57,6 +56,7 @@ TEST(BufferPoolManagerTest, SampleTest) {
     EXPECT_NE(nullptr, bpm->NewPage(&page_id_temp));
   }
 
+  /*
   // Scenario: We should be able to fetch the data we wrote a while ago.
   page0 = bpm->FetchPage(0);
   EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));

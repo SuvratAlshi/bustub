@@ -55,9 +55,10 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
   if (is_dirty) {
     FlushPageImpl(page_id);
   }
-  
+
   frame_id_t frame_id = page_table_[page_id];
   replacer_->Unpin(frame_id);
+  pages_[frame_id].pin_count_ = 0;
   return true;
  }
 
@@ -68,6 +69,7 @@ bool BufferPoolManager::FlushPageImpl(page_id_t page_id) {
   // Make sure you call DiskManager::WritePage!
   frame_id_t frame_id = page_table_[page_id];
   disk_manager_->WritePage(page_id, pages_[frame_id].data_);
+  pages_[frame_id].is_dirty_ = false;
   return true;
 }
 
