@@ -15,6 +15,9 @@
 #include <list>
 #include <unordered_map>
 
+#include <iostream>
+using namespace std;
+
 namespace bustub {
 
 BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager, LogManager *log_manager)
