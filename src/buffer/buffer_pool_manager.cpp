@@ -47,11 +47,28 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   return nullptr;
 }
 
-bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { return false; }
+bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { 
+  if (page_table_.find(page_id) == page_table_.end()) {
+    return false;
+  }
+
+  if (is_dirty) {
+    FlushPageImpl(page_id);
+  }
+  
+  frame_id_t frame_id = page_table_[page_id];
+  replacer_->Unpin(frame_id);
+  return true;
+ }
 
 bool BufferPoolManager::FlushPageImpl(page_id_t page_id) {
+  if (page_table_.find(page_id) == page_table_.end()) {
+    return false;
+  }
   // Make sure you call DiskManager::WritePage!
-  return false;
+  frame_id_t frame_id = page_table_[page_id];
+  disk_manager_->WritePage(page_id, pages_[frame_id].data_);
+  return true;
 }
 
 Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
