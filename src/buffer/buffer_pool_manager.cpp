@@ -53,14 +53,13 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   std::unordered_map<page_id_t, frame_id_t>::iterator it = page_table_.find(page_id);
   // if page alread in buffer manager
   if (it != page_table_.end()) {
-    cout << "FetchPage: found page in page_table" << endl;
     frame_id = page_table_[it->second];
+    pages_[frame_id].pin_count_ += 1;
     return &pages_[frame_id];
   }
 
   // check free list
   if (free_list_.size() > 0) {
-    cout << "FetchPage: found a empty frame" << endl;
     frame_id = free_list_.front();
     free_list_.pop_front();
   } else {
@@ -70,7 +69,6 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
     if (!victim_present) {
       return nullptr;
     }
-    cout << "FetchPage: found page in the replacer and frame id is " << frame_id << "." << endl;
   }  
 
   // flush victim page if dirty
@@ -88,7 +86,7 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // clean the frame and reset meta data to new page
   pages_[frame_id].ResetMemory();
   pages_[frame_id].page_id_ = page_id;
-  pages_[frame_id].pin_count_ = 0;
+  pages_[frame_id].pin_count_ = 1;
   pages_[frame_id].is_dirty_ = false;
   
   disk_manager_->ReadPage(page_id, pages_[frame_id].data_);
@@ -152,7 +150,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   
   // zero out memory
   pages_[frame_id].page_id_ = new_page_id;
-  pages_[frame_id].pin_count_ = 0;
+  pages_[frame_id].pin_count_ = 1;
   pages_[frame_id].is_dirty_ = false;
   memset(&pages_[frame_id].data_, 0, PAGE_SIZE);
 
@@ -172,7 +170,25 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
   // 1.   If P does not exist, return true.
   // 2.   If P exists, but has a non-zero pin-count, return false. Someone is using the page.
   // 3.   Otherwise, P can be deleted. Remove P from the page table, reset its metadata and return it to the free list.
-  return false;
+
+  // return true if the page_id does not exist
+  if (page_table_.find(page_id) == page_table_.end()) {
+    return true;
+  }
+
+  frame_id_t frame_id = page_table_[page_id];
+  if (pages_[frame_id].pin_count_ > 0){
+    return false;
+  }
+
+  pages_[frame_id].ResetMemory();
+  pages_[frame_id].is_dirty_ = false;
+  pages_[frame_id].page_id_ = 0;
+  disk_manager_->DeallocatePage(page_id);
+  // erase victim page_id
+  page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
+  free_list_.push_back(frame_id);
+  return true;
 }
 
 void BufferPoolManager::FlushAllPagesImpl() {
