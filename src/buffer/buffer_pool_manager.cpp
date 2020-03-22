@@ -94,18 +94,23 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
 }
 
 bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { 
+  cout << "UnpinPage 0" << endl;
   if (page_table_.find(page_id) == page_table_.end()) {
+    cout << "UnpinPage 1" << endl;
     return false;
   }
 
   if (is_dirty) {
+    cout << "UnpinPage 2" << endl;
     bool flushResult = FlushPageImpl(page_id);
     assert(flushResult == true);
   }
 
+  cout << "UnpinPage 3" << endl;
   frame_id_t frame_id = page_table_[page_id];
   replacer_->Unpin(frame_id);
   pages_[frame_id].pin_count_ = 0;
+  cout << "UnpinPage 4" << endl;
   return true;
  }
 
