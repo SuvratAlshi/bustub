@@ -92,7 +92,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   *page_id = new_page_id;
 
   // return page pointer
-  return &pages_[frame_id].data_;
+  return &pages_[frame_id];
 }
 
 bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
