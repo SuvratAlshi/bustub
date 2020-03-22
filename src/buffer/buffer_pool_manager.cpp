@@ -94,23 +94,18 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
 }
 
 bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { 
-  cout << "UnpinPage 0, page id is " << page_id << "." << endl;
   if (page_table_.find(page_id) == page_table_.end()) {
-    cout << "UnpinPage 1" << endl;
     return false;
   }
 
   if (is_dirty) {
-    cout << "UnpinPage 2" << endl;
     bool flushResult = FlushPageImpl(page_id);
     assert(flushResult == true);
   }
 
-  cout << "UnpinPage 3" << endl;
   frame_id_t frame_id = page_table_[page_id];
   replacer_->Unpin(frame_id);
   pages_[frame_id].pin_count_ = 0;
-  cout << "UnpinPage 4" << endl;
   return true;
  }
 
@@ -135,8 +130,6 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   frame_id_t frame_id;
   page_id_t  new_page_id;
 
-  cout << "NewPage entry" << endl;
-
   // check free list
   if (free_list_.size() > 0) {
     frame_id = free_list_.front();
@@ -146,11 +139,9 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
      // nothing in the free list and replacer
      // this also means that all pages are pinned
      if (!victim_present) {
-       cout << "NewPage: returning nullptr" << endl;
        return nullptr;
      }
     
-    cout << "NewPage: victim frame id is " << frame_id << " and page id is " << pages_[frame_id].page_id_ << "." << endl;
     // erase victim page_id
     page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
   }
