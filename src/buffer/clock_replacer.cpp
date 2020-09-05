@@ -18,12 +18,12 @@ namespace bustub {
 
 ClockReplacer::ClockReplacer(size_t num_pages) {
     candidates = new list<int>;
-    candidate_attendance = new vector<int>(num_pages, 0);
+    is_frame_present = new vector<int>(num_pages, 0);
 }
 
 ClockReplacer::~ClockReplacer() {
     delete candidates;
-    delete candidate_attendance;
+    delete is_frame_present;
 }
 
 bool ClockReplacer::Victim(frame_id_t *frame_id) { 
@@ -34,24 +34,24 @@ bool ClockReplacer::Victim(frame_id_t *frame_id) {
     int victim_id = candidates->front();
     candidates->pop_front();
     *frame_id = victim_id;
-    candidate_attendance->at(victim_id) = 0;
+    is_frame_present->at(victim_id) = 0;
     return true;
 }
 
 void ClockReplacer::Pin(frame_id_t frame_id) {
-    if (candidate_attendance->at(frame_id) == 1) {
+    if (is_frame_present->at(frame_id) == 1) {
             candidates->remove(frame_id);
-            candidate_attendance->at(frame_id) = 0;
+            is_frame_present->at(frame_id) = 0;
     }
 }
 
 void ClockReplacer::Unpin(frame_id_t frame_id) {
     // add to the clock replacer vec
-    if (candidate_attendance->at(frame_id)) {
+    if (is_frame_present->at(frame_id)) {
         return;
     }
     candidates->push_back(frame_id);
-    candidate_attendance->at(frame_id) = 1;
+    is_frame_present->at(frame_id) = 1;
 }
 
 size_t ClockReplacer::Size() {
