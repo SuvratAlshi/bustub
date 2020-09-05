@@ -50,7 +50,7 @@ class ClockReplacer : public Replacer {
   int size = 0;
   int index = 0;
   std::list<int> *candidates;
-  std::vector<int> *candidate_attendance;
+  std::vector<int> *is_frame_present;
 };
 
 }  // namespace bustub
