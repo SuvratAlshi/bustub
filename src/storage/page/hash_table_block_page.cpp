@@ -66,7 +66,6 @@ void HASH_TABLE_BLOCK_TYPE::Remove(slot_offset_t bucket_ind) {
     // reset all fields without checking validity of location
     // array_[bucket_ind].first = 0;
     // array_[bucket_ind].second = 0;
-    occupied_[bucket_ind] = 0;
     readable_[bucket_ind] = 0;
   }
   return;

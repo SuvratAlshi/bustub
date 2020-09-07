@@ -24,7 +24,6 @@ namespace bustub {
 
 // NOLINTNEXTLINE
 TEST(HashTablePageTest, HeaderPageSampleTest) {
-  std::cout << "Hello, running HashTablePageTest" << std::endl;
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManager(5, disk_manager);
 
@@ -62,7 +61,7 @@ TEST(HashTablePageTest, HeaderPageSampleTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_BlockPageSampleTest) {
+TEST(HashTablePageTest, BlockPageSampleTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManager(5, disk_manager);
 
