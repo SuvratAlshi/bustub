@@ -26,7 +26,16 @@ template <typename KeyType, typename ValueType, typename KeyComparator>
 HASH_TABLE_TYPE::LinearProbeHashTable(const std::string &name, BufferPoolManager *buffer_pool_manager,
                                       const KeyComparator &comparator, size_t num_buckets,
                                       HashFunction<KeyType> hash_fn)
-    : buffer_pool_manager_(buffer_pool_manager), comparator_(comparator), hash_fn_(std::move(hash_fn)) {}
+    : buffer_pool_manager_(buffer_pool_manager), comparator_(comparator), hash_fn_(std::move(hash_fn)) {
+
+      // allocate a header page
+      // page_id_t header_page_id = INVALID_PAGE_ID;
+      // auto header_page = reinterpret_cast<HashTableHeaderPage *>(buffer_pool_manager_->NewPage(&header_page_id, nullptr)->GetData());
+
+      // allocate block pages
+      // get size per block page
+      // save header page id with hash table
+    }
 
 /*****************************************************************************
  * SEARCH
@@ -40,6 +49,10 @@ bool HASH_TABLE_TYPE::GetValue(Transaction *transaction, const KeyType &key, std
  *****************************************************************************/
 template <typename KeyType, typename ValueType, typename KeyComparator>
 bool HASH_TABLE_TYPE::Insert(Transaction *transaction, const KeyType &key, const ValueType &value) {
+  // hash the key
+  // get block page id from modulo of total pages
+  // get bucket id from modulo of total buckets within a block page
+  // loop to search for empty location, should start and circle back to start
   return false;
 }
 
