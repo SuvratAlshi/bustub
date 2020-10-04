@@ -48,6 +48,9 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // 3.     Delete R from the page table and insert P.
   // 4.     Update P's metadata, read in the page content from disk, and then return a pointer to P.
 
+  // guard access via latch
+  std::lock_guard<std::mutex> guard(this->latch_);
+
   frame_id_t frame_id;
 
   std::unordered_map<page_id_t, frame_id_t>::iterator it = page_table_.find(page_id);
@@ -69,16 +72,17 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
     if (!victim_present) {
       return nullptr;
     }
+    // flush victim page if dirty
+    if (pages_[frame_id].is_dirty_) {
+      disk_manager_->WritePage(pages_[frame_id].page_id_, pages_[frame_id].data_);
+      pages_[frame_id].is_dirty_ = false;
+    }
+
+    // erase victim page_id
+    page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
   }  
 
-  // flush victim page if dirty
-  if (pages_[frame_id].is_dirty_) {
-    bool flushResult = FlushPageImpl(pages_[frame_id].page_id_);
-    assert(flushResult == true);
-  }
 
-  // erase victim page_id
-  page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
 
   // insert p into page_table
   page_table_[page_id] = frame_id;
@@ -94,22 +98,24 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
 }
 
 bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) { 
+  // guard access via latch
+  std::lock_guard<std::mutex> guard(this->latch_);
+
   if (page_table_.find(page_id) == page_table_.end()) {
     return false;
-  }
-
-  if (is_dirty) {
-    bool flushResult = FlushPageImpl(page_id);
-    assert(flushResult == true);
   }
 
   frame_id_t frame_id = page_table_[page_id];
   replacer_->Unpin(frame_id);
   pages_[frame_id].pin_count_ = 0;
+  pages_[frame_id].is_dirty_ |= is_dirty;
   return true;
  }
 
 bool BufferPoolManager::FlushPageImpl(page_id_t page_id) {
+  // guard access via latch
+  std::lock_guard<std::mutex> guard(this->latch_);
+  
   if (page_table_.find(page_id) == page_table_.end()) {
     return false;
   }
@@ -127,6 +133,9 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   // 3.   Update P's metadata, zero out memory and add P to the page table.
   // 4.   Set the page ID output parameter. Return a pointer to P.
 
+  // guard access via latch
+  std::lock_guard<std::mutex> guard(this->latch_);
+
   frame_id_t frame_id;
   page_id_t  new_page_id;
 
@@ -141,6 +150,12 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
      if (!victim_present) {
        return nullptr;
      }
+
+      // flush victim page if dirty
+      if (pages_[frame_id].is_dirty_) {
+        disk_manager_->WritePage(pages_[frame_id].page_id_, pages_[frame_id].data_);
+        pages_[frame_id].is_dirty_ = false;
+      }
     
     // erase victim page_id
     page_table_.erase(page_table_.find(pages_[frame_id].page_id_));
@@ -171,6 +186,9 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
   // 2.   If P exists, but has a non-zero pin-count, return false. Someone is using the page.
   // 3.   Otherwise, P can be deleted. Remove P from the page table, reset its metadata and return it to the free list.
 
+  // guard access via latch
+  std::lock_guard<std::mutex> guard(this->latch_);
+
   // return true if the page_id does not exist
   if (page_table_.find(page_id) == page_table_.end()) {
     return true;
@@ -192,6 +210,9 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
 }
 
 void BufferPoolManager::FlushAllPagesImpl() {
+  // guard access via latch
+  std::lock_guard<std::mutex> guard(this->latch_);
+
   // You can do it!
   frame_id_t frame_id;
   page_id_t page_id;
