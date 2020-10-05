@@ -26,7 +26,6 @@ KeyType HASH_TABLE_BLOCK_TYPE::KeyAt(slot_offset_t bucket_ind) const {
   {
     // check if bucket_ind is occupied and readable
     if (occupied_bit == 1 and readable_bit == 1) {
-      // std::cout << "Block page, found a legit key" << std::endl;
       return array_[bucket_ind].first;
     }
   }
@@ -66,11 +65,9 @@ bool HASH_TABLE_BLOCK_TYPE::Insert(slot_offset_t bucket_ind, const KeyType &key,
          array_[bucket_ind].second = value;
          occupied_[index] |= (1 << bucket_bit);
          readable_[index] |= (1 << bucket_bit);
-         // std::cout << "Block Page, insert at " << bucket_ind << std::endl;
          return true;
        }
   }
-  // std::cout << "Block Page, failed to insert at " << bucket_ind << std::endl;
   return false;
 }
 

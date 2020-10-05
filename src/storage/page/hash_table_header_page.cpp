@@ -14,15 +14,11 @@
 
 namespace bustub {
 page_id_t HashTableHeaderPage::GetBlockPageId(size_t index) { 
-    // std::cout << "Header page, GetBlockPageId (index, next_index)::(" << index << ", " << next_ind_ << ")" << std::endl; 
     // check that index is less than the next_ind_
     if (index < next_ind_) {
-        // std::cout << "Header page, GetBlockPageId 1.0" << std::endl; 
         auto id = block_page_ids_[index];
-        // std::cout << "Header page, GetBlockPageId 1.1" << std::endl; 
         return id;
     }
-    // std::cout << "Header page, GetBlockPageId 2.0" << std::endl; 
     return 0; 
 }
 
